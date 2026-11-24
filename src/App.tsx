@@ -1,147 +1,169 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
-const curiosities = [
-  { number: '01', word: 'A door', line: 'A doorway only opens while you are looking for it.' },
-  { number: '02', word: 'A clock', line: 'It does not keep time. It keeps appointments.' },
-  { number: '03', word: 'A switch', line: 'One small decision changes the whole room.' },
-  { number: '04', word: 'A drawer', line: 'Something useful is hiding under something ordinary.' },
-  { number: '05', word: 'A map', line: 'The shortest route is rarely the most memorable.' },
+const objects = [
+  { code: 'A-17', name: 'A useful mistake', note: 'A failed assumption, preserved' },
+  { code: 'B-04', name: 'A tiny system', note: 'Rules, inputs, and an outcome' },
+  { code: 'C-29', name: 'An unfinished loop', note: 'Worth reopening tomorrow' },
 ]
 
 function App() {
-  const [curiosityIndex, setCuriosityIndex] = useState(() => {
-    const stored = Number(window.localStorage.getItem('lucky-curiosity') || 0)
-    return stored % curiosities.length
-  })
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const curiosity = curiosities[curiosityIndex]
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [objectIndex, setObjectIndex] = useState(0)
+  const [time, setTime] = useState('')
 
-  const changeCuriosity = () => {
-    const next = (curiosityIndex + 1) % curiosities.length
-    window.localStorage.setItem('lucky-curiosity', String(next))
-    setCuriosityIndex(next)
-  }
+  useEffect(() => {
+    const update = () => {
+      setTime(new Intl.DateTimeFormat('en', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(new Date()))
+    }
+    update()
+    const timer = window.setInterval(update, 30_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const object = objects[objectIndex]
 
   return (
-    <main className="cabinet">
+    <main className="observatory">
       <header className="masthead">
-        <a className="nameplate" href="#top" aria-label="Lucky Patel, back to top">
-          Lucky Patel
-        </a>
-        <p>Personal index / 2026</p>
-        <nav aria-label="Primary navigation">
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
+        <a className="identity" href="#top" aria-label="Lucky Patel, top">Lucky Patel</a>
+        <p className="edition">Personal observatory / 2026</p>
+        <button
+          className="menu-toggle"
+          type="button"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? 'Close' : 'Index'}
+        </button>
+        <nav className={menuOpen ? 'open' : ''} aria-label="Primary navigation">
+          <a href="#work" onClick={() => setMenuOpen(false)}>Work</a>
+          <a href="#notes" onClick={() => setMenuOpen(false)}>Notes</a>
+          <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
         </nav>
       </header>
 
-      <section className="opening" id="top">
-        <div className="opening-copy">
-          <p className="issue">Issue no. 1 / The beginning</p>
-          <h1>
-            Come back
-            <em>curious.</em>
-          </h1>
-          <p className="opening-note">
-            Lucky Patel’s personal place for projects, experiments, and useful surprises.
+      <section className="instrument" id="top">
+        <div className="instrument-title">
+          <p className="station">
+            <span className="station-dot" aria-hidden="true" />
+            Station LP-01
           </p>
+          <h1>Lucky<br />Patel</h1>
+          <p className="title-note">Making small systems with large curiosity.</p>
         </div>
 
-        <button
-          className={`curiosity-door ${drawerOpen ? 'is-open' : ''}`}
-          type="button"
-          aria-expanded={drawerOpen}
-          onClick={() => setDrawerOpen((open) => !open)}
-        >
-          <span className="door-label">Today’s object</span>
-          <span className="door-window" aria-hidden="true">
-            <span className="door-word">{curiosity.word}</span>
-          </span>
-          <span className="door-action">
-            {drawerOpen ? 'Close object' : 'Open object'} <b aria-hidden="true">↗</b>
-          </span>
-        </button>
-
-        {drawerOpen && (
-          <aside className="object-card" aria-live="polite">
-            <p>{curiosity.number}</p>
-            <blockquote>{curiosity.line}</blockquote>
-            <button type="button" onClick={changeCuriosity}>Next object →</button>
-          </aside>
-        )}
-      </section>
-
-      <section className="ticker" aria-label="Site themes">
-        <div>
-          <span>Projects in progress</span>
-          <b>✳</b>
-          <span>Things worth returning to</span>
-          <b>✳</b>
-          <span>Lucky Patel</span>
+        <div className="finder">
+          <div className="finder-labels">
+            <span>Object no.</span>
+            <span>{object.code}</span>
+          </div>
+          <div className="finder-window" aria-live="polite">
+            <div className="orbit orbit-a" aria-hidden="true" />
+            <div className="orbit orbit-b" aria-hidden="true" />
+            <div className="finder-body">
+              <span>{object.name}</span>
+              <small>{object.note}</small>
+            </div>
+          </div>
+          <div className="finder-controls">
+            <button
+              type="button"
+              onClick={() => setObjectIndex((current) => (current - 1 + objects.length) % objects.length)}
+              aria-label="Previous object"
+            >
+              −
+            </button>
+            <span>{String(objectIndex + 1).padStart(2, '0')} / {String(objects.length).padStart(2, '0')}</span>
+            <button
+              type="button"
+              onClick={() => setObjectIndex((current) => (current + 1) % objects.length)}
+              aria-label="Next object"
+            >
+              +
+            </button>
+          </div>
         </div>
+
+        <a className="enter" href="#work">
+          Enter the index
+          <span aria-hidden="true">↓</span>
+        </a>
+        <p className="local-time">Local {time || '00:00'}</p>
       </section>
 
       <section className="work" id="work">
-        <header className="section-rule">
-          <p>Selected work</p>
-          <span>01—08</span>
+        <header className="section-index">
+          <p>01 / Work index</p>
+          <p>Arrivals are grouped, not ranked</p>
         </header>
 
-        <article className="incoming">
-          <div className="incoming-number">01</div>
-          <div className="incoming-copy">
-            <p className="incoming-label">Incoming</p>
-            <h2>The first real project</h2>
-            <p>Its name, images, story, and link belong here when Lucky shares them.</p>
+        <article className="featured-work">
+          <div className="work-scale">
+            <span>Arrival 01</span>
+            <b>Q</b>
           </div>
-          <div className="incoming-mark" aria-hidden="true">
-            <span>LP</span>
+          <div className="work-detail">
+            <p className="status">First entry / waiting for details</p>
+            <h2>The first<br />real project</h2>
+            <p>The title, process, and outcome will live here once the project is ready.</p>
           </div>
         </article>
 
-        <div className="future-grid">
+        <div className="work-list">
           <article>
             <span>02</span>
-            <h3>Open slot</h3>
-            <p>Project details pending</p>
+            <h3>Open frame</h3>
+            <p>Content pending</p>
           </article>
           <article>
             <span>03</span>
-            <h3>Open slot</h3>
-            <p>Project details pending</p>
+            <h3>Open frame</h3>
+            <p>Content pending</p>
           </article>
           <article>
             <span>04</span>
-            <h3>Open slot</h3>
-            <p>Project details pending</p>
+            <h3>Open frame</h3>
+            <p>Content pending</p>
           </article>
+        </div>
+      </section>
+
+      <section className="notes" id="notes">
+        <header className="section-index">
+          <p>02 / Field notes</p>
+          <p>Observations in progress</p>
+        </header>
+        <div className="empty-notes">
+          <span>000</span>
+          <p>No notes published yet.</p>
+          <p>The log remains blank until Lucky adds a real observation.</p>
         </div>
       </section>
 
       <section className="about" id="about">
-        <header className="section-rule">
-          <p>About</p>
-          <span>Lucky’s index</span>
+        <header className="section-index">
+          <p>03 / Observer</p>
+          <p>Lucky Patel</p>
         </header>
-        <div className="about-layout">
-          <h2>I make small systems that leave room for surprise.</h2>
+        <div className="about-grid">
+          <p>I keep a close eye on systems, interfaces, and the useful oddities between them.</p>
           <div>
-            <p>This is a working index of Lucky Patel’s projects and experiments. It will grow without pretending that unfinished things are finished.</p>
-            <p>There is no resume wall here. The work will speak in its own form, and the site will keep changing as new things arrive.</p>
+            <p>This site is the working index of things I make and things I am learning while making them.</p>
+            <a href="https://github.com/Teqoflucky" target="_blank" rel="noreferrer">
+              View GitHub <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </div>
       </section>
 
-      <footer id="contact">
-        <p>Start a conversation</p>
-        <a href="mailto:hello@luckypatel.tech">hello@luckypatel.tech</a>
-        <div className="footer-rule">
-          <span>Lucky Patel © 2026</span>
-          <a href="https://github.com/Teqoflucky" target="_blank" rel="noreferrer">GitHub ↗</a>
-          <a href="#top">Top ↑</a>
-        </div>
+      <footer>
+        <p>Lucky Patel © 2026</p>
+        <a href="#top">Return to station ↑</a>
       </footer>
     </main>
   )
