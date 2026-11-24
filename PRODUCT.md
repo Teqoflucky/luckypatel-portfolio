@@ -35,7 +35,7 @@ The site is hosted through GitHub and Cloudflare on a custom domain, with projec
 
 - Personal, first-person, playful, and direct
 - The experience should feel new and psychologically memorable, not like a generic portfolio
-- The old web-crypt visual identity is explicitly rejected
+- The new visual identity must not inherit or reference the previous portfolio
 
 ## Evidence on Hand
 
